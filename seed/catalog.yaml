@@ -1,0 +1,79 @@
+# 초기 데이터 (모두 가상). 시드 스크립트가 "없으면 넣고 있으면 그대로" 넣는다.
+# 데모 계정 비밀번호는 여기 두지 않는다 → 환경 변수 DEMO_PASSWORD (③④에서는 Secret)
+# 개인정보는 모두 가상 값 (example.com은 예시용으로 예약된 도메인)
+# scripts/scenario.sh의 기대값 근거: 데모 계정(아이디 demo)의 책 10권 (unread 3 / reading 3 / done 4)
+# status는 기록과 맞게 직접 적는다 (시드는 자동 상태 변경 규칙을 거치지 않음)
+demo_user:
+  username: demo
+  name: 김데모
+  nickname: 책벌레
+  email: demo@example.com
+
+books:
+  - title: 파이썬 첫걸음
+    author: 김하늘
+    total_pages: 280
+    status: done
+    rating: 4
+    review: 예제가 짧아서 따라 하기 좋았다. 뒤쪽 비동기 장은 한 번 더 읽어야겠다.
+    logs:
+      - {read_on: 2026-10-01, page: 90}
+      - {read_on: 2026-10-05, page: 200, note: 클래스 장 끝}
+      - {read_on: 2026-10-09, page: 280, note: 완독}
+  - title: 실전 FastAPI
+    author: 이서준
+    total_pages: 420
+    status: done
+    rating: 5
+    review: 의존성 주입과 미들웨어 장이 특히 유용했다. 지금 만드는 was의 뼈대가 이 책에서 나왔다.
+    logs:
+      - {read_on: 2026-10-12, page: 150}
+      - {read_on: 2026-10-20, page: 420, note: 완독}
+  - title: 쿠버네티스 교과서
+    author: 최도윤
+    total_pages: 520
+    status: reading
+    rating: 4
+    logs:
+      - {read_on: 2026-11-10, page: 120, note: 파드와 서비스}
+      - {read_on: 2026-11-15, page: 210, note: 6장 롤링 업데이트}
+  - title: 컨테이너 이미지 다이어트
+    author: 정민재
+    total_pages: 240
+    status: reading
+    logs:
+      - {read_on: 2026-11-18, page: 60, note: 멀티스테이지 빌드}
+  - title: PostgreSQL 운영 노트
+    author: 한유나
+    total_pages: 380
+    status: unread
+  - title: 새벽의 서점
+    author: 윤아린
+    total_pages: 310
+    status: done
+    rating: 3
+    review: 설정은 좋았지만 결말이 급하게 끝나서 아쉬웠다.
+    logs:
+      - {read_on: 2026-09-02, page: 150}
+      - {read_on: 2026-09-04, page: 310}
+  - title: 마지막 배송
+    author: 오태민
+    status: unread
+  - title: 구름 위의 정원
+    author: 서지안
+    total_pages: 260
+    status: reading
+    logs:
+      - {read_on: 2026-11-20, page: 40}
+  - title: 숫자로 읽는 경제
+    author: 강현우
+    total_pages: 230
+    status: done
+    rating: 4
+    review: 그래프 하나로 흐름을 설명하는 방식이 쉬웠다.
+    logs:
+      - {read_on: 2026-08-15, page: 230, note: 하루 만에 완독}
+  - title: 클라우드 비용 줄이기
+    author: 배준혁
+    total_pages: 300
+    status: unread
