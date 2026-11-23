@@ -37,6 +37,15 @@ seed/catalog.yaml 데모 계정 + 책 10권
 | 일반 설정 | `DB_HOST` `DB_PORT` `DB_NAME` `DB_POOL_SIZE` `JWT_EXPIRE_MINUTES` `APP_VERSION` |
 | 비밀 | `DB_USER` `DB_PASSWORD` `JWT_SECRET` `DEMO_PASSWORD` |
 
+DB 계정은 둘로 나눕니다. was는 **앱 계정**(슈퍼유저 아님, 테이블 읽기 · 쓰기만)으로 접속하고, 테이블을 만드는 마이그레이션 단계만 **관리 계정**으로 접속합니다.
+
+```bash
+# 마이그레이션 단계 (DB_USER · DB_PASSWORD = 관리 계정, APP_DB_USER · APP_DB_PASSWORD = 앱 계정)
+alembic upgrade head                   # 테이블 생성 (관리 계정 소유)
+python -m app.dbrole                   # 앱 계정 생성 · 권한 부여 (멱등)
+python -m app.seed seed/catalog.yaml   # 초기 데이터
+```
+
 ## 로컬 실행 (WSL 2 Ubuntu, ①)
 
 DB(`postgres:18.7` 컨테이너)를 먼저 띄운 뒤 실행합니다.
