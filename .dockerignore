@@ -1,0 +1,16 @@
+# 빌드 컨텍스트에서 제외: 이미지에 필요 없는 것, 비밀 값
+# 비밀 값 (이 저장소에는 없지만 실수로 생겨도 이미지에 들어가지 않게)
+.env
+.env.*
+# Git · 가상 환경 · 캐시
+.git
+.gitignore
+.gitattributes
+.githooks
+.venv
+**/__pycache__
+**/*.pyc
+# 빌드 설정 · 문서
+Dockerfile
+.dockerignore
+README.md
