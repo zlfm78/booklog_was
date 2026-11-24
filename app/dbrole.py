@@ -3,6 +3,7 @@
 사용: python -m app.dbrole
   DB_HOST · DB_PORT · DB_NAME · DB_USER · DB_PASSWORD  = 관리 계정 (테이블을 만들고 소유하는 계정)
   APP_DB_USER · APP_DB_PASSWORD                       = was가 접속할 앱 계정
+  APP_DB_IAM=true                                     = 앱 계정을 비밀번호 없이 IAM 인증 전용으로 (④ RDS, rds_iam 역할)
 
 was는 슈퍼유저가 아니라 이 앱 계정으로 접속한다 (최소 권한):
   - 할 수 있는 것: 테이블 행 읽기 · 쓰기 · 수정 · 삭제, 시퀀스로 id 받기
@@ -22,7 +23,8 @@ ROLE_LOCK_ID = 7_420_002
 def main() -> None:
     admin = os.environ["DB_USER"]
     app_user = os.environ["APP_DB_USER"]
-    app_password = os.environ["APP_DB_PASSWORD"]
+    iam = os.environ.get("APP_DB_IAM") == "true"
+    app_password = None if iam else os.environ["APP_DB_PASSWORD"]
     dbname = os.environ["DB_NAME"]
     if app_user == admin:
         raise SystemExit("APP_DB_USER는 관리 계정(DB_USER)과 달라야 합니다")
@@ -40,11 +42,16 @@ def main() -> None:
             role = sql.Identifier(app_user)
             exists = conn.execute("SELECT 1 FROM pg_roles WHERE rolname = %s", (app_user,)).fetchone()
             # 비밀번호는 sql.Literal로 안전하게 따옴표 처리 (DDL은 %s 바인딩을 못 씀). 서버가 scram-sha-256으로 해시해 저장
+            # IAM 전용이면 PASSWORD NULL: 비밀번호로는 로그인할 수 없고 rds_iam 토큰으로만 (둘을 섞으면 불안정 — RDS 문서)
             conn.execute(
                 sql.SQL("{} ROLE {} LOGIN PASSWORD {} NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT").format(
-                    sql.SQL("ALTER" if exists else "CREATE"), role, sql.Literal(app_password)
+                    sql.SQL("ALTER" if exists else "CREATE"),
+                    role,
+                    sql.SQL("NULL") if iam else sql.Literal(app_password),
                 )
             )
+            if iam:
+                conn.execute(sql.SQL("GRANT rds_iam TO {}").format(role))
             for stmt in (
                 "GRANT CONNECT ON DATABASE {db} TO {role}",
                 "GRANT USAGE ON SCHEMA public TO {role}",
@@ -62,7 +69,7 @@ def main() -> None:
             if conn.execute("SELECT to_regclass('public.alembic_version')").fetchone()[0]:
                 conn.execute(sql.SQL("REVOKE ALL ON public.alembic_version FROM {}").format(role))
             superuser = conn.execute("SELECT rolsuper FROM pg_roles WHERE rolname = %s", (app_user,)).fetchone()[0]
-            print(f"db role ok: app={app_user} {'updated' if exists else 'created'} superuser={superuser}")
+            print(f"db role ok: app={app_user} {'updated' if exists else 'created'} superuser={superuser} auth={'iam' if iam else 'password'}")
         finally:
             conn.execute("SELECT pg_advisory_unlock(%s)", (ROLE_LOCK_ID,))
 

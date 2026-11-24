@@ -35,6 +35,7 @@ seed/catalog.yaml 데모 계정 + 책 10권
 | 구분 | 키 |
 |---|---|
 | 일반 설정 | `DB_HOST` `DB_PORT` `DB_NAME` `DB_POOL_SIZE` `JWT_EXPIRE_MINUTES` `APP_VERSION` |
+| ④ RDS Proxy (선택) | `DB_IAM_AUTH=true`(비밀번호 대신 IAM 토큰, `AWS_REGION` 필요) · `APP_DB_IAM=true`(migrate가 앱 계정을 IAM 전용으로) · `PGSSLMODE` · `PGSSLROOTCERT`(libpq TLS) |
 | 비밀 | `DB_USER` `DB_PASSWORD` `JWT_SECRET` `DEMO_PASSWORD` |
 
 DB 계정은 둘로 나눕니다. was는 **앱 계정**(슈퍼유저 아님, 테이블 읽기 · 쓰기만)으로 접속하고, 테이블을 만드는 마이그레이션 단계만 **관리 계정**으로 접속합니다.
