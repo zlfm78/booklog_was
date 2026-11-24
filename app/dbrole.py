@@ -43,11 +43,15 @@ def main() -> None:
             exists = conn.execute("SELECT 1 FROM pg_roles WHERE rolname = %s", (app_user,)).fetchone()
             # 비밀번호는 sql.Literal로 안전하게 따옴표 처리 (DDL은 %s 바인딩을 못 씀). 서버가 scram-sha-256으로 해시해 저장
             # IAM 전용이면 PASSWORD NULL: 비밀번호로는 로그인할 수 없고 rds_iam 토큰으로만 (둘을 섞으면 불안정 — RDS 문서)
+            # NOSUPERUSER는 관리 계정이 진짜 슈퍼유저일 때만 붙인다. RDS의 관리 계정(rds_superuser)은 슈퍼유저가 아니라
+            # ALTER ROLE에 SUPERUSER 속성을 쓰면 거부된다. 새 계정은 원래 NOSUPERUSER가 기본값이라 빼도 결과가 같다
+            admin_is_superuser = conn.execute("SELECT rolsuper FROM pg_roles WHERE rolname = current_user").fetchone()[0]
             conn.execute(
-                sql.SQL("{} ROLE {} LOGIN PASSWORD {} NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT").format(
+                sql.SQL("{} ROLE {} LOGIN PASSWORD {}{} NOCREATEDB NOCREATEROLE NOINHERIT").format(
                     sql.SQL("ALTER" if exists else "CREATE"),
                     role,
                     sql.SQL("NULL") if iam else sql.Literal(app_password),
+                    sql.SQL(" NOSUPERUSER") if admin_is_superuser else sql.SQL(""),
                 )
             )
             if iam:
