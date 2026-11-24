@@ -11,6 +11,7 @@ from app.db import DbSession
 POD = socket.gethostname()
 NODE = os.environ.get("NODE_NAME", "-")  # ③④에서 Downward API(spec.nodeName)로 주입
 VERSION = os.environ.get("APP_VERSION", "dev")  # ②부터 이미지 빌드 시 고정
+REVISION = os.environ.get("APP_REVISION", "-")  # 1.1.0부터: 이미지를 빌드한 소스 커밋 (빌드 시 고정)
 
 app = FastAPI(title="booklog-was", version=VERSION)
 
@@ -41,7 +42,7 @@ async def ready(session: DbSession):
 
 @app.get("/api/info")
 async def info():
-    return {"pod": POD, "node": NODE, "version": VERSION}
+    return {"pod": POD, "node": NODE, "version": VERSION, "revision": REVISION}
 
 
 app.include_router(users.router)

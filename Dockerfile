@@ -27,7 +27,8 @@ COPY app ./app
 # 빌드할 때 고정하는 값: 버전(화면 · /api/info), 소스 커밋 (docker build --build-arg ...)
 ARG APP_VERSION=dev
 ARG GIT_SHA=unknown
-ENV APP_VERSION=$APP_VERSION
+ENV APP_VERSION=$APP_VERSION \
+    APP_REVISION=$GIT_SHA
 LABEL org.opencontainers.image.title="booklog-was" \
       org.opencontainers.image.version=$APP_VERSION \
       org.opencontainers.image.revision=$GIT_SHA \
